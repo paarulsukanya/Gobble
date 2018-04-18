@@ -1,4 +1,7 @@
 import boto3
+from flask import current_app
+
+app = current_app
 
 dynamodb = boto3.resource('dynamodb', 
         region_name='us-east-1', 
@@ -9,10 +12,12 @@ dynamodb = boto3.resource('dynamodb',
 ddbclient = dynamodb.meta.client
 
 
-def initDB(conn,table_name):
-    all_tables = [i.table_name for i in conn.tables.all()]
+def initDB():    
+    app.logger.info("Initializing DB ...")
+    table_name = 'restaurant'
+    all_tables = [i.table_name for i in dynamodb.tables.all()]
     if table_name not in all_tables:
-        table = conn.create_table(
+        table = dynamodb.create_table(
         TableName=table_name,
         KeySchema=[
             {
@@ -32,17 +37,12 @@ def initDB(conn,table_name):
         })
         return table
     else:
-        return conn.Table(table_name)
+        return dynamodb.Table(table_name)
 
 
-def deleteDB(conn):
-    table_iterator = iter(conn.tables.all())
-    curr=next(table_iterator)
+def deleteDB():
+    table_iterator = iter(dynamodb.tables.all())
+    curr=next(table_iterator, None)
     while curr:
         curr.delete()
-        curr=next(table_iterator)
-
-# TODO: delete this function treat dynamodb as global instead of conn and dont pass table-name as param to initDB 
-def createTable():
-    print(initDB(dynamodb,'restaurant'))
-    #print(ddbclient.list_tables())
+        curr=next(table_iterator, None)

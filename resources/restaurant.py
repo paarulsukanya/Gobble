@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, current_app
 from flask_restful import Resource,reqparse
 #,fields, marshal_with
 from marshmallow import Schema, fields
@@ -9,6 +9,7 @@ import json
 
 table = dynamodb.Table('restaurant')
 
+app = current_app
 
 # parser = reqparse.RequestParser()
 # parser.add_argument('restaurant_id', type=int, required=True)
@@ -33,6 +34,8 @@ table = dynamodb.Table('restaurant')
 # 	'address': fields.String,
 # 	'menu': fields.Nested(menu_fields),
 # }
+
+
 
 class ItemSchema(Schema):
 	item_id = fields.Integer()
@@ -66,7 +69,7 @@ class Restaurant(Resource):
     	#return details of all retaurants
     	response = table.scan()
     	items = json.dumps(response['Items'], cls=DecimalEncoder) #[json.dumps(i, cls=DecimalEncoder) for i in response['Items']]
-    	print("GET LOG:", items)
+    	app.logger.info("GET_LOG: " + items)
     	return items
 
     #@marshal_with(restaurant_fields)
@@ -80,6 +83,6 @@ class Restaurant(Resource):
         #     # we return bad request since we require name and id
         #     return {'message': 'Missing required parameters.'}, 400
         #print("POST LOG", args)
-        print("POST LOG", data)
+        app.logger.info("POST_LOG: "+ data)
         resp = ddbclient.put_item(TableName='restaurant',Item=data)
         return resp, 201

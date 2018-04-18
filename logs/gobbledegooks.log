@@ -1,0 +1,1 @@
+GET LOG: [{"restaurant_id": 2, "restaurant_name": "bombom"}, {"restaurant_id": 1, "restaurant_name": "red"}, {"menu": [{"category": "Lunch", "items": [{"item_id": 2, "item_name": "Cheese Cake", "item_price": 25000}]}], "restaurant_id": 3, "restaurant_name": "bom"}, {"restaurant_id": 5, "restaurant_name": "bombin"}, {"restaurant_id": 6, "restaurant_name": "bindi"}]
