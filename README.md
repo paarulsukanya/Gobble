@@ -7,10 +7,19 @@ Requirements:
 	2. python3
 	3. pip
 
-From the root directory of the app
+Run the following from the root directory of the app
 
-1. For setup run: 
-		make setup
+* For setup: 
+```
+	make setup
+```
 
-2. For running the app:
-		make run
+* For running the app:
+```
+	make run
+```
+
+* For running the unit tests:
+```
+	make test
+```
