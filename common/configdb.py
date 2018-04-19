@@ -8,16 +8,29 @@ dynamodb = boto3.resource('dynamodb',
         endpoint_url="http://localhost:8000",
         aws_access_key_id='GobbleDB',
         aws_secret_access_key='YYYYYY')
-
 ddbclient = dynamodb.meta.client
 
+testdb = boto3.resource('dynamodb', 
+        region_name='us-east-1', 
+        endpoint_url="http://localhost:8000",
+        aws_access_key_id='TestDB-1',
+        aws_secret_access_key='YYYYYY')
+tdbclient = testdb.meta.client
 
-def initDB():    
+
+
+def get_db():
+    return testdb if app.config['TEST'] else dynamodb
+
+def get_client():
+    return tdbclient if app.config['TEST'] else ddbclient
+
+def init_db(db, client):
     app.logger.info("Initializing DB ...")
     table_name = 'restaurant'
-    all_tables = [i.table_name for i in dynamodb.tables.all()]
+    all_tables = [i.table_name for i in db.tables.all()]
     if table_name not in all_tables:
-        table = dynamodb.create_table(
+        table = db.create_table(
         TableName=table_name,
         KeySchema=[
             {
@@ -37,11 +50,11 @@ def initDB():
         })
         return table
     else:
-        return dynamodb.Table(table_name)
+        return db.Table(table_name)
 
 
-def deleteDB():
-    table_iterator = iter(dynamodb.tables.all())
+def delete_db(db, client):
+    table_iterator = iter(db.tables.all())
     curr=next(table_iterator, None)
     while curr:
         curr.delete()

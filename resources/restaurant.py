@@ -1,88 +1,82 @@
 from flask import request, current_app
 from flask_restful import Resource,reqparse
-#,fields, marshal_with
 from marshmallow import Schema, fields
 from boto3.dynamodb.conditions import Key, Attr
-from common.configdb import dynamodb,ddbclient
+from common.configdb import get_db, get_client
+from common.utils import DecimalEncoder
+from common.schema import ItemSchema, MenusSchema, RestaurantSchema
 import decimal
 import json
 
-table = dynamodb.Table('restaurant')
-
 app = current_app
 
-# parser = reqparse.RequestParser()
-# parser.add_argument('restaurant_id', type=int, required=True)
-# parser.add_argument('restaurant_name',required=True)
-
-
-
-
-# menu_item_fields = {
-# 	'menu_item_id': fields.Integer,
-# 	'menu_item_name': fields.String,
-# 	'menu_item_price': fields.Float,
-# }
-# menu_fields = {
-# 	'category': fields.String,
-# 	'items': fields.Nested(menu_item_fields),
-# }
-
-# restaurant_fields = {
-# 	'restaurant_id': fields.Integer,
-# 	'restaurant_name': fields.String,
-# 	'address': fields.String,
-# 	'menu': fields.Nested(menu_fields),
-# }
-
-
-
-class ItemSchema(Schema):
-	item_id = fields.Integer()
-	item_name = fields.String()
-	item_price = fields.Decimal()
-
-class MenuSchema(Schema):
-	category = fields.String()
-	items = fields.Nested(ItemSchema,many = True)
-
-class RestaurantSchema(Schema):
-	restaurant_id = fields.Integer()
-	restaurant_name = fields.String()
-	address = fields.String()
-	menu = fields.Nested(MenuSchema, many=True)
-    
-
-
-# Helper class to convert a DynamoDB item to JSON.
-class DecimalEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, decimal.Decimal):
-            if o % 1 > 0:
-                return float(o)
-            else:
-                return int(o)
-        return super(DecimalEncoder, self).default(o)
 
 class Restaurant(Resource):
-    def get(self):
-    	#return details of all retaurants
-    	response = table.scan()
-    	items = json.dumps(response['Items'], cls=DecimalEncoder) #[json.dumps(i, cls=DecimalEncoder) for i in response['Items']]
-    	app.logger.info("GET_LOG: " + items)
-    	return items
+    def get(self,restaurant_id=None):
 
-    #@marshal_with(restaurant_fields)
+		db = get_db()
+		client = get_client()
+		table = db.Table('restaurant')
+
+		response=None
+		if restaurant_id:
+			response = table.query(KeyConditionExpression=Key('restaurant_id').eq(restaurant_id))
+		else:
+			#return details of all retaurants
+			response = table.scan()
+
+		res = json.dumps(response['Items'], cls=DecimalEncoder)
+		app.logger.info("GET_LOG: " + res)
+		return res, 200
+
+   
     def post(self):
-       
-    	#args = parser.parse_args()
+		db = get_db()
+		client = get_client()
+		table = db.Table('restaurant')
+    	
+		body = request.json
+		items, error = RestaurantSchema().dump(body)
 
-    	body = request.json
-    	data,error = RestaurantSchema().dump(body)
-        # if not 'restaurant_id' in args or not 'restaurant_name' in args:
-        #     # we return bad request since we require name and id
-        #     return {'message': 'Missing required parameters.'}, 400
-        #print("POST LOG", args)
-        app.logger.info("POST_LOG: "+ data)
-        resp = ddbclient.put_item(TableName='restaurant',Item=data)
-        return resp, 201
+		app.logger.info("POST_LOG: "+ items)
+		resp = client.put_item(TableName='restaurant',Item=items)
+		return resp, 201
+
+
+    def put(self,restaurant_id):
+		db = get_db()
+		client = get_client()
+		table = db.Table('restaurant')
+
+		body = request.json
+		#data,error = RestaurantSchema().dump(body)
+
+		response = table.update_item(
+			Key={
+		        'restaurant_id': restaurant_id
+		    },
+		    UpdateExpression="set restaurant_name = :r",
+		    ExpressionAttributeValues={
+		        ':r': body['restaurant_name']
+		    },
+		    ReturnValues="UPDATED_NEW"
+		)
+
+		items = json.dumps(response, cls=DecimalEncoder)
+		app.logger.info("PUT_LOG: "+ items)
+		return items, 200
+
+    def delete(self, restaurant_id):
+		#deleting only on id
+
+		db = get_db()
+		client = get_client()
+		table = db.Table('restaurant')
+
+
+		response = table.delete_item(Key={
+			'restaurant_id': restaurant_id
+			})
+		items = json.dumps(response, cls=DecimalEncoder)
+		app.logger.info("DEL_LOG: " + items)
+		return "restaurant_id:" + str(restaurant_id) +" has been deleted", 204
