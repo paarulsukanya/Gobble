@@ -1,3 +1,4 @@
+adium-theme-ubuntu==0.3.4
 aniso8601==3.0.0
 awscli==1.15.4
 boto3==1.7.4
@@ -10,6 +11,8 @@ Flask==0.12.2
 flask-dynamo==0.1.2
 Flask-RESTful==0.3.6
 futures==3.2.0
+gyp==0.1
+ipython==2.4.1
 itsdangerous==0.24
 Jinja2==2.10
 jmespath==0.9.3
