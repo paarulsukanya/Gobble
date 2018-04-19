@@ -11,15 +11,15 @@ Run the following from the root directory of the app
 
 * For setup: 
 ```
-	make setup
+make setup
 ```
 
 * For running the app:
 ```
-	make run
+make run
 ```
 
 * For running the unit tests:
 ```
-	make test
+make test
 ```
