@@ -38,7 +38,7 @@ class Restaurant(Resource):
 		body = request.json
 		items, error = RestaurantSchema().dump(body)
 
-		app.logger.info("POST_LOG: "+ items)
+		app.logger.info("POST_LOG: "+ str(items))
 		resp = client.put_item(TableName='restaurant',Item=items)
 		return resp, 201
 
@@ -63,7 +63,7 @@ class Restaurant(Resource):
 		)
 
 		items = json.dumps(response, cls=DecimalEncoder)
-		app.logger.info("PUT_LOG: "+ items)
+		app.logger.info("PUT_LOG: "+ str(items))
 		return items, 200
 
     def delete(self, restaurant_id):
@@ -78,5 +78,5 @@ class Restaurant(Resource):
 			'restaurant_id': restaurant_id
 			})
 		items = json.dumps(response, cls=DecimalEncoder)
-		app.logger.info("DEL_LOG: " + items)
+		app.logger.info("DEL_LOG: " + str(items))
 		return "restaurant_id:" + str(restaurant_id) +" has been deleted", 204

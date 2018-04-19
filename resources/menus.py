@@ -20,7 +20,7 @@ class Menus(Resource):
 		    KeyConditionExpression=Key('restaurant_id').eq(restaurant_id)
 		)
 		res = json.dumps(response['Items'], cls=DecimalEncoder) 
-		app.logger.info("GET_LOG: " + res)
+		app.logger.info("GET_LOG: " + str(res))
 		return res,200
 
     def post(self,restaurant_id):
@@ -43,7 +43,7 @@ class Menus(Resource):
 		ReturnValues="UPDATED_NEW"
 		)
 		res = json.dumps(response, cls=DecimalEncoder)
-		app.logger.info("PUT_LOG: "+ res)
+		app.logger.info("POST_LOG: "+ str(res))
 		return res, 201
 
     def delete(self, restaurant_id): 
@@ -63,6 +63,6 @@ class Menus(Resource):
 		ReturnValues="UPDATED_NEW"
 		)
 		res = json.dumps(response, cls=DecimalEncoder)
-		app.logger.info("DEL_LOG: "+ res)
+		app.logger.info("DEL_LOG: "+ str(res))
 		return res, 204
 
